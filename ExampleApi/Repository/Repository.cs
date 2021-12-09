@@ -9,6 +9,7 @@ namespace ExampleApi.DataAccess.Repository
         private readonly DbSet<T> dbSet;
         public Repository(DbContext dbContext)
         {
+            _dbContext = dbContext;
             dbSet = dbContext.Set<T>();
         }
         public void Add(T model)
