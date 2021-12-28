@@ -30,8 +30,8 @@ namespace ExampleApi.DataAccess.Repository
 
         public IQueryable<T> GetAll()
         {
-            var data = dbSet.Find();
-            return (IQueryable<T>)data;
+            return  dbSet;
+            //return (IQueryable<T>)data;
         }
 
         public void Update(T model)

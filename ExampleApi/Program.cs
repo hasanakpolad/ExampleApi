@@ -10,6 +10,10 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(opt =>
+{
+    opt.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:3000").AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});
 
 var app = builder.Build();
 
@@ -19,7 +23,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -79,7 +83,100 @@ app.MapDelete("DeleteUser", ([FromBody] User model) =>
 });
 #endregion
 
-#region ProductMethods
+#region TodoMethods
+app.MapGet("GetAllTodo", () =>
+{
+    using (var uow = new UnitOfWork())
+    {
+        try
+        {
+            var data = uow.GetRepository<Todo>().GetAll();
+            if (data == null)
+            {
+                return Results.NotFound();
+            }
+            return Results.Ok(data.ToList());
+
+        }
+        catch (global::System.Exception ex)
+        {
+            return Results.StatusCode(500);
+        }
+
+    }
+});
+app.MapGet("GetTodoById/{id}", (int id) =>
+{
+    using (var uow = new UnitOfWork())
+    {
+        try
+        {
+            var data = uow.GetRepository<Todo>().Get(x => x.Id.Equals(id));
+            if (data == null)
+            {
+                return Results.NotFound();
+            }
+            return Results.Ok(data);
+
+        }
+        catch (global::System.Exception)
+        {
+            return Results.StatusCode(500);
+        }
+    }
+});
+app.MapPost("AddTodo", ([FromBody] Todo model) =>
+{
+    using (var uow = new UnitOfWork())
+    {
+        try
+        {
+            uow.GetRepository<Todo>().Add(model);
+            if (uow.SaveChanges() > 0)
+                return Results.Ok(model);
+            else return Results.StatusCode(500);
+        }
+        catch (global::System.Exception)
+        {
+            return Results.StatusCode(500);
+        }
+    }
+});
+app.MapPut("UpdateTodo", ([FromBody] Todo model) =>
+{
+    using (var uow = new UnitOfWork())
+    {
+        try
+        {
+            if (model == null) return Results.BadRequest();
+            uow.GetRepository<Todo>().Update(model);
+            if (uow.SaveChanges() > 0) return Results.Ok();
+            else return Results.StatusCode(500);
+        }
+        catch (global::System.Exception)
+        {
+            return Results.StatusCode(500);
+        }
+    }
+});
+app.MapDelete("DeleteTodo", ([FromBody] Todo model) =>
+{
+    using (var uow = new UnitOfWork())
+    {
+
+        try
+        {
+            if (model == null) return Results.BadRequest();
+            uow.GetRepository<Todo>().Delete(model);
+            if (uow.SaveChanges() > 0) return Results.Ok();
+            else return Results.StatusCode(500);
+        }
+        catch (global::System.Exception)
+        {
+            return Results.StatusCode(500);
+        }
+    }
+});
 
 #endregion
 
