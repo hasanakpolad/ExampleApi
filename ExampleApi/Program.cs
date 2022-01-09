@@ -159,13 +159,14 @@ app.MapPut("UpdateTodo", ([FromBody] Todo model) =>
         }
     }
 });
-app.MapDelete("DeleteTodo", ([FromBody] Todo model) =>
+app.MapDelete("DeleteTodo/{id}", (int id) =>
 {
     using (var uow = new UnitOfWork())
     {
 
         try
         {
+            var model = uow.GetRepository<Todo>().Get(x => x.Id.Equals(id));
             if (model == null) return Results.BadRequest();
             uow.GetRepository<Todo>().Delete(model);
             if (uow.SaveChanges() > 0) return Results.Ok();
